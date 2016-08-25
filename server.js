@@ -1,14 +1,33 @@
+var port = process.env.PORT || 3030;
 var express = require('express');
 var app = express();
 var http = require('http').Server(app);
 
-var port = process.env.PORT || 3030;
+var io = require('socket.io')(http);
 
 
 app.use(express.static(__dirname + '/public'));
 
+app.get('/', function(res, req){
+	res.sendFile(__dirname + '/public/index.html');
+});
 
+io.on('connection', function(socket){
+	console.log("User connected via socket.io");
 
-app.listen(port, function(){
+	socket.on('message', function(message){
+		console.log('Message received: ');
+		console.log(message.text);
+
+		
+		io.emit('message', message);
+	});
+
+	socket.emit('message', {
+		text: 'Welcome to the Chat App'
+	});
+});
+
+http.listen(port, function(){
 	console.log("Server started at: " + port);
 });
